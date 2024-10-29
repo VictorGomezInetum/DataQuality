@@ -369,7 +369,7 @@ if option == "Configurar regla":
                 )
                 
                 # Update tipo_campo dynamically
-                tipo_campo_value = next((row[2] for row in schemas_df if campos_tabla != ""))
+                tipo_campo_value = next((row[1] for row in data_table if campos_tabla != ""))
                 if campos_tabla!= "":
                     cols[0].markdown(f"**Tipo de Campo:** {tipo_campo_value}")
 
@@ -407,7 +407,7 @@ if option == "Configurar regla":
                     )
                     
                     # Update desc_regla dynamically
-                    desc_regla_value = next((row['DESCRIPTION'] for row in dictionary if row['NAME'] == reglas), None)
+                    desc_regla_value = next((row[3] for row in reglas if reglas != ""))
                     if reglas != "":
                         cols[1].markdown(f"**Descripción de regla:** {desc_regla_value}")
     
