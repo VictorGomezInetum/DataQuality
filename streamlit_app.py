@@ -364,7 +364,7 @@ if option == "Configurar regla":
                 )
                 
                 # Update tipo_campo dynamically
-                tipo_campo_value = next((row['DATA_TYPE'] for row in data_table if row['COLUMN_NAME'] == campos_tabla), None)
+                tipo_campo_value = next((row[2] for row in d if campos_tabla != ""))
                 if campos_tabla!= "":
                     cols[0].markdown(f"**Tipo de Campo:** {tipo_campo_value}")
 
