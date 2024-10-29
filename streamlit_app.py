@@ -391,7 +391,7 @@ if option == "Configurar regla":
                     st.divider()
                     st.write(f"### Regla {idx+1}")
                     
-                    reglas_options = [''] + [row['NAME'] for row in dictionary]
+                    reglas_options = dictionary['NAME'].tolist()
                     
                     # Check if the previous selection is still valid
                     if f'reglas_{idx}' in st.session_state and st.session_state[f'reglas_{idx}'] in reglas_options:
