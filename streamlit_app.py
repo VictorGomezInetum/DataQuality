@@ -278,7 +278,7 @@ def cargar_tabla():
 
 def add_new_rule():
     st.session_state.rules.append({})
-    #st.experimental_rerun()
+    st.experimental_rerun()
 
 def reset_rules():
     st.session_state.rules = [{}]
