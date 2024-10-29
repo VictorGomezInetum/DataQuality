@@ -480,9 +480,13 @@ elif option == "Resumen de reglas":
    cols = st.columns((4))
 
    # Obtener niveles de severidad únicos
-   severities = [row['SEVERITY'] for row in get_config()]
-   severities = list(set(severities))  # Obtener valores únicos
-   severities.insert(0, 'Todos')  # Agregar opción para ver todas las severidades
+   config_df = get_config()  # get_config devuelve el DataFrame
+   severities = config_df['SEVERITY'].unique().tolist()  # Obtener valores únicos
+   severities.insert(0, 'Todos')
+
+   #severities = [row['SEVERITY'] for row in get_config()]
+   #severities = list(set(severities))  # Obtener valores únicos
+   #severities.insert(0, 'Todos')  # Agregar opción para ver todas las severidades
 
    # Filtro de severidad
    selected_severity = cols[0].selectbox("Selecciona la severidad:", severities)
