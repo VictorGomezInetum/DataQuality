@@ -614,5 +614,5 @@ elif option == "Notificaciones":
 elif option == "Visualizacion":
     url = "https://app.powerbi.com/links/QBjaDLKwV3?ctid=14cb4ab4-62b8-45a2-a944-e225383ee1f9&pbi_source=linkShare"
     st.write("Enlace al [Dashboard](%s)" % url)
-    iframe_html = '<iframe title="DataQuality" width="600" height="2000" src="https://app.powerbi.com/reportEmbed?reportId=d07cdf98-3cd6-44ae-b193-5bf0e7cafefc&autoAuth=true&ctid=14cb4ab4-62b8-45a2-a944-e225383ee1f9" frameborder="0" allowFullScreen="true"></iframe>'
-    components.html(iframe_html, height=2000)
+    iframe_html = '<iframe title="DataQuality" width="600" height="600" src="https://app.powerbi.com/reportEmbed?reportId=d07cdf98-3cd6-44ae-b193-5bf0e7cafefc&autoAuth=true&ctid=14cb4ab4-62b8-45a2-a944-e225383ee1f9" frameborder="0" allowFullScreen="true"></iframe>'
+    components.html(iframe_html, height=600)
