@@ -36,9 +36,14 @@ def get_config():
         SELECT * FROM DATAQUALITY.CONFIGURATION.CONFIG
         """
         cursor.execute(query)
+        
+        # Obtener nombres de columnas
+        columns = [desc[0] for desc in cursor.description]
+        
+        # Convertir a DataFrame
         result = cursor.fetchall()
-        print(result)
-        return result
+        df = pd.DataFrame(result, columns=columns)
+        return df
     finally:
         cursor.close()
 
