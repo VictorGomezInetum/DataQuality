@@ -74,16 +74,22 @@ def get_emails():
         cursor.close()
 
 
-def get_schema_by_catalog(catalog):
+def get_schema_by_catalog(catalog_name):
     cursor = session.cursor()
     try:
-        query= f"""
-        SELECT SCHEMA_NAME
-        FROM {catalog}.INFORMATION_SCHEMA.SCHEMATA;
+        query = f"""
+        SELECT SCHEMA_NAME FROM DATAQUALITY.CONFIGURATION.SCHEMAS
+        WHERE CATALOG_NAME = '{catalog_name}'
         """
         cursor.execute(query)
+        
+        # Obtener nombres de columnas
+        columns = [desc[0] for desc in cursor.description]
+        
+        # Convertir a DataFrame
         result = cursor.fetchall()
-        return result
+        df = pd.DataFrame(result, columns=columns)
+        return df
     finally:
         cursor.close()
 
@@ -298,7 +304,10 @@ if option == "Configurar regla":
         st.warning("Selecciona un catalog")
     
     else:
-        schemas = [row['SCHEMA_NAME'] for row in get_schema_by_catalog(catalog_type)]
+        schemas_df = get_schema_by_catalog(catalog_type)  # Asegúrate de pasar el catálogo seleccionado
+        schemas = schemas_df['SCHEMA_NAME'].tolist()  # Convertir la columna en una lista
+
+        #schemas = [row['SCHEMA_NAME'] for row in get_schema_by_catalog(catalog_type)]
         schema_type = cols[1].selectbox(
             "Schema:", schemas,
             key='schema_type',
