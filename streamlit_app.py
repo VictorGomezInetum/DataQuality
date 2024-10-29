@@ -17,120 +17,182 @@ session = snowflake.connector.connect(
 )
 
 def get_diccionary():
-    query = """
-    select * from DATAQUALITY.RULES_DICTIONARY.DICTIONARY
-    """
-    data = session.sql(query).collect()
-    return data
+    cursor = session.cursor()
+    try:
+        query = """
+        select * from DATAQUALITY.RULES_DICTIONARY.DICTIONARY
+        """
+        cursor.execute(query)
+        result = cursor.fetchall()
+        return result
+    finally:
+        cursor.close()
+
 
 def get_config():
-    query = """
-    SELECT * FROM DATAQUALITY.CONFIGURATION.CONFIG
-    """
-    data = session.sql(query).collect()
-    return data
+    cursor = session.cursor()
+    try:
+        query = """
+        SELECT * FROM DATAQUALITY.CONFIGURATION.CONFIG
+        """
+        cursor.execute(query)
+        result = cursor.fetchall()
+        return result
+    finally:
+        cursor.close()
+
 
 def get_config_last_10():
-    query = """
-    SELECT * FROM DATAQUALITY.CONFIGURATION.CONFIG ORDER BY TIME_CREATION DESC LIMIT 10
-    """
-    data = session.sql(query).collect()
-    return data
+    cursor = session.cursor()
+    try:
+        query = """
+        SELECT * FROM DATAQUALITY.CONFIGURATION.CONFIG ORDER BY TIME_CREATION DESC LIMIT 10
+        """
+        cursor.execute(query)
+        result = cursor.fetchall()
+        return result
+    finally:
+        cursor.close()
+
 
 def get_emails():
-    query = """
-    SELECT * FROM DATAQUALITY.NOTIFICATIONS.EMAILS
-    """
-    data = session.sql(query).collect()
-    return data
+    cursor = session.cursor()
+    try:
+        query = """
+        SELECT * FROM DATAQUALITY.NOTIFICATIONS.EMAILS
+        """
+        cursor.execute(query)
+        result = cursor.fetchall()
+        return result
+    finally:
+        cursor.close()
+
 
 def get_schema_by_catalog(catalog):
-    query= f"""
-    SELECT SCHEMA_NAME
-    FROM {catalog}.INFORMATION_SCHEMA.SCHEMATA;
-  """
-    data = session.sql(query).collect()
-    return data
+    cursor = session.cursor()
+    try:
+        query= f"""
+        SELECT SCHEMA_NAME
+        FROM {catalog}.INFORMATION_SCHEMA.SCHEMATA;
+        """
+        cursor.execute(query)
+        result = cursor.fetchall()
+        return result
+    finally:
+        cursor.close()
+
 
 def get_tables_by_catalog_schema(catalog, schema):
-    query= f"""
-    SELECT TABLE_NAME
-    FROM {catalog}.INFORMATION_SCHEMA.TABLES
-    WHERE TABLE_SCHEMA = '{schema}';
-  """
-    data = session.sql(query).collect()
-    return data
+    cursor = session.cursor()
+    try:
+        query= f"""
+        SELECT TABLE_NAME
+        FROM {catalog}.INFORMATION_SCHEMA.TABLES
+        WHERE TABLE_SCHEMA = '{schema}';
+        """
+        cursor.execute(query)
+        result = cursor.fetchall()
+        return result
+    finally:
+        cursor.close()
+
 
 
 def get_info_table(catalog, schema, table):
-    query= f"""
-    SELECT COLUMN_NAME, DATA_TYPE
-    FROM {catalog}.INFORMATION_SCHEMA.COLUMNS
-    WHERE TABLE_SCHEMA = '{schema}'
-    AND TABLE_NAME = '{table}'
-  """
-    data = session.sql(query).collect()
-    return data
+    cursor = session.cursor()
+    try:
+        query= f"""
+        SELECT COLUMN_NAME, DATA_TYPE
+        FROM {catalog}.INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_SCHEMA = '{schema}'
+        AND TABLE_NAME = '{table}'
+    """
+        cursor.execute(query)
+        result = cursor.fetchall()
+        return result
+    finally:
+        cursor.close()
+
 
 
 # Change the query to point to your table
 def add_row_to_config(session, row):
-    args = ', '.join([f"""'{key}', '{value}'""" for key, value in json.loads(row['ARGS']).items()])
-    sql = f"""INSERT INTO DATAQUALITY.CONFIGURATION.CONFIG 
-    (BBDD, DATASET, TABLE_NAME, COLUMN_NAME, RULE_NAME, ARGS, SEVERITY, ACTION, TIME_CREATION, USER)
-    SELECT 
-    '{row['BBDD']}' AS BBDD,
-    '{row['DATASET']}' AS DATASET,
-    '{row['TABLE_NAME']}' AS TABLE_NAME,
-    '{row['COLUMN_NAME']}' AS COLUMN_NAME,
-    '{row['RULE_NAME']}' AS RULE_NAME,
-    OBJECT_CONSTRUCT({args}) AS ARGS,
-    '{row['SEVERITY']}' AS SEVERITY,
-    '{row['ACTION']}' AS ACTION,
-    CURRENT_TIMESTAMP,
-    CURRENT_USER() WHERE NOT EXISTS (
-            SELECT 1
-            FROM DATAQUALITY.CONFIGURATION.CONFIG
-            WHERE BBDD = '{row['BBDD']}' AND DATASET = '{row['DATASET']}'
-            AND TABLE_NAME = '{row['TABLE_NAME']}' AND COLUMN_NAME = '{row['COLUMN_NAME']}'
-            AND RULE_NAME = '{row['RULE_NAME']}'
-        )"""
+    cursor = session.cursor()
+    try:
+        args = ', '.join([f"""'{key}', '{value}'""" for key, value in json.loads(row['ARGS']).items()])
+        query = f"""INSERT INTO DATAQUALITY.CONFIGURATION.CONFIG 
+        (BBDD, DATASET, TABLE_NAME, COLUMN_NAME, RULE_NAME, ARGS, SEVERITY, ACTION, TIME_CREATION, USER)
+        SELECT 
+        '{row['BBDD']}' AS BBDD,
+        '{row['DATASET']}' AS DATASET,
+        '{row['TABLE_NAME']}' AS TABLE_NAME,
+        '{row['COLUMN_NAME']}' AS COLUMN_NAME,
+        '{row['RULE_NAME']}' AS RULE_NAME,
+        OBJECT_CONSTRUCT({args}) AS ARGS,
+        '{row['SEVERITY']}' AS SEVERITY,
+        '{row['ACTION']}' AS ACTION,
+        CURRENT_TIMESTAMP,
+        CURRENT_USER() WHERE NOT EXISTS (
+                SELECT 1
+                FROM DATAQUALITY.CONFIGURATION.CONFIG
+                WHERE BBDD = '{row['BBDD']}' AND DATASET = '{row['DATASET']}'
+                AND TABLE_NAME = '{row['TABLE_NAME']}' AND COLUMN_NAME = '{row['COLUMN_NAME']}'
+                AND RULE_NAME = '{row['RULE_NAME']}'
+            )"""
+        cursor.execute(query)
+        result = cursor.fetchall()
+        return result[0][0]
+    finally:
+        cursor.close()
 
-    return session.sql(sql).collect()[0][0]
 
 def add_row_to_emails(session, row):
-    sql_confirm = f"""
-    SELECT COUNT(e.EMAIL)
-    FROM DATAQUALITY.NOTIFICATIONS.EMAILS e
-    WHERE e.EMAIL = '{row['EMAIL']}';
-    """
-    
-    existe_email = session.sql(sql_confirm).collect()[0][0]
-    if existe_email == 0:
-        sql = f"""
-        INSERT INTO DATAQUALITY.NOTIFICATIONS.EMAILS (NAME, EMAIL, ACTION)
-        SELECT '{row['NAME']}', '{row['EMAIL']}', '{row['ACTION']}'
-        FROM SNOWFLAKE.ACCOUNT_USAGE.USERS
-        WHERE EMAIL = '{row['EMAIL']}'
-        AND NOT EXISTS (
-            SELECT 1
-            FROM DATAQUALITY.NOTIFICATIONS.EMAILS e
-            WHERE e.EMAIL = '{row['EMAIL']}'
-        )group by EMAIL;
+    cursor = session.cursor()
+    try:
+        sql_confirm = f"""
+        SELECT COUNT(e.EMAIL)
+        FROM DATAQUALITY.NOTIFICATIONS.EMAILS e
+        WHERE e.EMAIL = '{row['EMAIL']}';
         """
-        return session.sql(sql).collect()[0][0]
-    else:
-        return 2
+        cursor.execute(sql_confirm)
+        result = cursor.fetchall()
+        existe_email = result[0][0]
+        if existe_email == 0:
+            sql = f"""
+            INSERT INTO DATAQUALITY.NOTIFICATIONS.EMAILS (NAME, EMAIL, ACTION)
+            SELECT '{row['NAME']}', '{row['EMAIL']}', '{row['ACTION']}'
+            FROM SNOWFLAKE.ACCOUNT_USAGE.USERS
+            WHERE EMAIL = '{row['EMAIL']}'
+            AND NOT EXISTS (
+                SELECT 1
+                FROM DATAQUALITY.NOTIFICATIONS.EMAILS e
+                WHERE e.EMAIL = '{row['EMAIL']}'
+            )group by EMAIL;
+            """
+            cursor.execute(sql)
+            result = cursor.fetchall()
+            return result[0][0]
+        else:
+            return 2
+    finally:
+        cursor.close()
+
 
 
 def get_table_summary(catalog, schema, table, campo):
-    query= f"""
-    SELECT {campo}
-    FROM {catalog}.{schema}.{table}
-    LIMIT 5
-  """
-    data = session.sql(query).collect()
-    return data
+    cursor = session.cursor()
+    try:
+        query= f"""
+        SELECT {campo}
+        FROM {catalog}.{schema}.{table}
+        LIMIT 5
+    """
+        cursor.execute(query)
+        result = cursor.fetchall()
+        return result
+    finally:
+        cursor.close()
+
 
 # Función para ejecutar el procedimiento almacenado que uses
 def ejecutar_procedimiento():
@@ -141,12 +203,16 @@ def ejecutar_procedimiento():
     except Exception as e:
         st.success("¡Procedimiento ejecutado con éxito!")
         #st.error(f"Error al ejecutar el notebook: {e}")
+    finally:
+        cursor.close()
+
 
 # Función para cargar la tabla actualizada desde Snowflake
 def cargar_tabla():
+    cursor = session.cursor()
     try:
         # Consulta a la tabla (ajusta según tu tabla específica)
-        consulta = session.sql("select * from dataquality.resultados.dq_summary_errors order by EXECUTION_TS desc limit 30;")
+        consulta = cursor.execute("select * from dataquality.resultados.dq_summary_errors order by EXECUTION_TS desc limit 30;")
         queried_data = consulta.to_pandas()  # Convertir a dataframe de pandas
         
         # Mostrar los datos en la aplicación
@@ -154,6 +220,8 @@ def cargar_tabla():
         st.dataframe(queried_data, use_container_width=True)
     except Exception as e:
         st.error(f"Error al cargar la tabla: {e}")
+    finally:
+        cursor.close()
 
 def add_new_rule():
     st.session_state.rules.append({})
