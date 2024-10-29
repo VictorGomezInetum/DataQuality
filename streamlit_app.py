@@ -613,5 +613,5 @@ elif option == "Notificaciones":
         st.dataframe(get_emails())
 
 elif option == "Visualizacion":
-    iframe_html = '<iframe title="DataQuality" <iframe title="DataQuality" width="1500" height="800" src="https://app.powerbi.com/reportEmbed?reportId=d07cdf98-3cd6-44ae-b193-5bf0e7cafefc&autoAuth=true&ctid=14cb4ab4-62b8-45a2-a944-e225383ee1f9" frameborder="0" allowFullScreen="true"></iframe> src="https://app.powerbi.com/reportEmbed?reportId=d07cdf98-3cd6-44ae-b193-5bf0e7cafefc&autoAuth=true&ctid=14cb4ab4-62b8-45a2-a944-e225383ee1f9" frameborder="0" allowFullScreen="true"></iframe>'
+    iframe_html = '<iframe title="DataQuality" width="1500" height="800" src="https://app.powerbi.com/reportEmbed?reportId=d07cdf98-3cd6-44ae-b193-5bf0e7cafefc&autoAuth=true&ctid=14cb4ab4-62b8-45a2-a944-e225383ee1f9" frameborder="0" allowFullScreen="true"></iframe>'
     components.html(iframe_html, height=800)
