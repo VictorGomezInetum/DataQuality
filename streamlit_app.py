@@ -192,38 +192,40 @@ def add_row_to_config(session, row):
 def add_row_to_emails(session, row):
     cursor = session.cursor(SnowflakeCursor)
     try:
+        # Verificar si el email ya existe en la tabla de notificaciones
         sql_confirm = f"""
         SELECT COUNT(e.EMAIL)
         FROM DATAQUALITY.NOTIFICATIONS.EMAILS e
         WHERE e.EMAIL = '{row['EMAIL']}';
         """
         cursor.execute(sql_confirm)
-        result = cursor.fetchall()
-        existe_email = result[0][0]
+        result = cursor.fetchone()
+        existe_email = result[0]
+        
         if existe_email == 0:
-            sql = f"""
-            INSERT INTO DATAQUALITY.NOTIFICATIONS.EMAILS (NAME, EMAIL, ACTION)
-            SELECT '{row['NAME']}', '{row['EMAIL']}', '{row['ACTION']}'
-            FROM SNOWFLAKE.ACCOUNT_USAGE.USERS
-            WHERE EMAIL = '{row['EMAIL']}'
-            AND NOT EXISTS (
-                SELECT 1
-                FROM DATAQUALITY.NOTIFICATIONS.EMAILS e
-                WHERE e.EMAIL = '{row['EMAIL']}'
-            )group by EMAIL;
+            # Verificar si el email pertenece al proyecto de Snowflake
+            sql_check_user = f"""
+            SELECT COUNT(*) FROM SNOWFLAKE.ACCOUNT_USAGE.USERS
+            WHERE EMAIL = '{row['EMAIL']}';
             """
-            cursor.execute(query)
-            result = cursor.fetchall()
-            columns = [desc[0] for desc in cursor.description]
+            cursor.execute(sql_check_user)
+            result_user = cursor.fetchone()
+            pertenece_proyecto = result_user[0]
             
-            rows = [dict(zip(columns, row)) for row in result]
-            return rows[0][0]
+            if pertenece_proyecto == 1:
+                # Insertar el nuevo email en la tabla de notificaciones
+                sql_insert = f"""
+                INSERT INTO DATAQUALITY.NOTIFICATIONS.EMAILS (NAME, EMAIL, ACTION)
+                VALUES ('{row['NAME']}', '{row['EMAIL']}', '{row['ACTION']}')
+                """
+                cursor.execute(sql_insert)
+                return 1  # Éxito en la inserción
+            else:
+                return 0  # El email no pertenece al proyecto de Snowflake
         else:
-            return 2
+            return 2  # El email ya existe en la lista de notificaciones
     finally:
         cursor.close()
-
-
 
 def get_table_summary(catalog, schema, table, campo):
     cursor = session.cursor(SnowflakeCursor)
