@@ -5,6 +5,7 @@ import json
 import streamlit.components.v1 as components
 import snowflake.connector
 from snowflake.connector.cursor import SnowflakeCursor
+import requests
 
 # Obtener la sesión activa de Snowflake
 session = snowflake.connector.connect(
@@ -173,10 +174,14 @@ def add_row_to_config(session, row):
         
         # Ejecutar una consulta para verificar la fila recién insertada
         verify_query = f"""
-        SELECT count(*) as datos_introducidos FROM DATAQUALITY.CONFIGURATION.CONFIG 
-        WHERE BBDD = '{row['BBDD']}' AND DATASET = '{row['DATASET']}'
-        AND TABLE_NAME = '{row['TABLE_NAME']}' AND COLUMN_NAME = '{row['COLUMN_NAME']}'
-        AND RULE_NAME = '{row['RULE_NAME']}'
+        SELECT count(*) as datos_introducidos 
+            FROM DATAQUALITY.CONFIGURATION.CONFIG 
+            WHERE BBDD = '{row['BBDD']}' 
+            AND DATASET = '{row['DATASET']}' 
+            AND TABLE_NAME = '{row['TABLE_NAME']}' 
+            AND COLUMN_NAME = '{row['COLUMN_NAME']}' 
+            AND RULE_NAME = '{row['RULE_NAME']}'
+            AND TIME_CREATION < CURRENT_TIMESTAMP - INTERVAL '1 minute'
         """
         
         cursor.execute(verify_query)
@@ -286,6 +291,18 @@ def reset_rules():
         key.startswith('reglas_') or key.startswith('arg_') or key.startswith('severity_') or key.startswith('action_') or key.startswith('campos_tabla'))]
     for key in keys_to_remove:
         del st.session_state[key]
+
+def make_post_request(data):
+    url = "https://api.powerbi.com/v1.0/myorg/reports/d07cdf98-3cd6-44ae-b193-5bf0e7cafefc/Default.UpdateDatasources" 
+    try:
+        response = requests.post(url, json=data) 
+        if response.status_code == 200:
+            st.success("¡Petición POST exitosa!")
+            st.json(response.json()) 
+        else:
+            st.error(f"Error {response.status_code}: {response.text}")
+    except Exception as e:
+        st.error(f"Ocurrió un error: {e}")
 
 st.set_page_config(page_title="DataQuality", layout="wide")
 st.markdown("""
