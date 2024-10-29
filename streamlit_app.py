@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import time
+from datetime import datetime, timedelta
 import json
 import streamlit.components.v1 as components
 import snowflake.connector
@@ -147,6 +147,11 @@ def get_info_table(catalog, schema, table):
 
 def add_row_to_config(session, row):
     cursor = session.cursor(SnowflakeCursor)
+    # Obtener la hora actual
+    hora_actual = datetime.now()
+
+    # Restar un minuto
+    hora_reducida = hora_actual - timedelta(minutes=1)
     try:
         args = ', '.join([f"""'{key}', '{value}'""" for key, value in json.loads(row['ARGS']).items()])
         query = f"""INSERT INTO DATAQUALITY.CONFIGURATION.CONFIG 
@@ -160,7 +165,7 @@ def add_row_to_config(session, row):
         OBJECT_CONSTRUCT({args}) AS ARGS,
         '{row['SEVERITY']}' AS SEVERITY,
         '{row['ACTION']}' AS ACTION,
-        CURRENT_TIMESTAMP,
+        {hora_actual},
         CURRENT_USER() WHERE NOT EXISTS (
                 SELECT 1
                 FROM DATAQUALITY.CONFIGURATION.CONFIG
@@ -181,7 +186,7 @@ def add_row_to_config(session, row):
             AND TABLE_NAME = '{row['TABLE_NAME']}' 
             AND COLUMN_NAME = '{row['COLUMN_NAME']}' 
             AND RULE_NAME = '{row['RULE_NAME']}'
-            AND TIME_CREATION < CURRENT_TIMESTAMP - INTERVAL '1 minute'
+            AND TIME_CREATION < {hora_reducida}
         """
         
         cursor.execute(verify_query)
