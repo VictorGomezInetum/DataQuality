@@ -69,40 +69,42 @@ def get_config_last_10():
 
 
 def get_emails():
-    cursor = session.cursor()
+    cursor = session.cursor(SnowflakeCursor)
     try:
         query = """
         SELECT * FROM DATAQUALITY.NOTIFICATIONS.EMAILS
         """
         cursor.execute(query)
+
         result = cursor.fetchall()
-        return result
+        columns = [desc[0] for desc in cursor.description]
+        
+        rows = [dict(zip(columns, row)) for row in result]
+        return rows
     finally:
         cursor.close()
 
 
 def get_schema_by_catalog(catalog_name):
-    cursor = session.cursor()
+    cursor = session.cursor(SnowflakeCursor)
     try:
         query= f"""
             SELECT SCHEMA_NAME
             FROM {catalog_name}.INFORMATION_SCHEMA.SCHEMATA;
         """
         cursor.execute(query)
-        
-        # Obtener nombres de columnas
+
+        result = cursor.fetchall()
         columns = [desc[0] for desc in cursor.description]
         
-        # Convertir a DataFrame
-        result = cursor.fetchall()
-        df = pd.DataFrame(result, columns=columns)
-        return df
+        rows = [dict(zip(columns, row)) for row in result]
+        return rows
     finally:
         cursor.close()
 
 
 def get_tables_by_catalog_schema(catalog, schema):
-    cursor = session.cursor()
+    cursor = session.cursor(SnowflakeCursor)
     try:
         query= f"""
         SELECT TABLE_NAME
@@ -110,21 +112,19 @@ def get_tables_by_catalog_schema(catalog, schema):
         WHERE TABLE_SCHEMA = '{schema}';
         """
         cursor.execute(query)
-        
-        # Obtener nombres de columnas
+
+        result = cursor.fetchall()
         columns = [desc[0] for desc in cursor.description]
         
-        # Convertir a DataFrame
-        result = cursor.fetchall()
-        df = pd.DataFrame(result, columns=columns)
-        return df
+        rows = [dict(zip(columns, row)) for row in result]
+        return rows
     finally:
         cursor.close()
 
 
 
 def get_info_table(catalog, schema, table):
-    cursor = session.cursor()
+    cursor = session.cursor(SnowflakeCursor)
     try:
         query= f"""
         SELECT COLUMN_NAME, DATA_TYPE
@@ -133,14 +133,12 @@ def get_info_table(catalog, schema, table):
         AND TABLE_NAME = '{table}'
         """
         cursor.execute(query)
-        
-        # Obtener nombres de columnas
+
+        result = cursor.fetchall()
         columns = [desc[0] for desc in cursor.description]
         
-        # Convertir a DataFrame
-        result = cursor.fetchall()
-        df = pd.DataFrame(result, columns=columns)
-        return df
+        rows = [dict(zip(columns, row)) for row in result]
+        return rows
     finally:
         cursor.close()
 
@@ -148,7 +146,7 @@ def get_info_table(catalog, schema, table):
 
 # Change the query to point to your table
 def add_row_to_config(session, row):
-    cursor = session.cursor()
+    cursor = session.cursor(SnowflakeCursor)
     try:
         args = ', '.join([f"""'{key}', '{value}'""" for key, value in json.loads(row['ARGS']).items()])
         query = f"""INSERT INTO DATAQUALITY.CONFIGURATION.CONFIG 
@@ -171,14 +169,18 @@ def add_row_to_config(session, row):
                 AND RULE_NAME = '{row['RULE_NAME']}'
             )"""
         cursor.execute(query)
+
         result = cursor.fetchall()
-        return result[0][0]
+        columns = [desc[0] for desc in cursor.description]
+        
+        rows = [dict(zip(columns, row)) for row in result]
+        return rows[0][0]
     finally:
         cursor.close()
 
 
 def add_row_to_emails(session, row):
-    cursor = session.cursor()
+    cursor = session.cursor(SnowflakeCursor)
     try:
         sql_confirm = f"""
         SELECT COUNT(e.EMAIL)
@@ -200,9 +202,12 @@ def add_row_to_emails(session, row):
                 WHERE e.EMAIL = '{row['EMAIL']}'
             )group by EMAIL;
             """
-            cursor.execute(sql)
+            cursor.execute(query)
             result = cursor.fetchall()
-            return result[0][0]
+            columns = [desc[0] for desc in cursor.description]
+            
+            rows = [dict(zip(columns, row)) for row in result]
+            return rows[0][0]
         else:
             return 2
     finally:
@@ -211,7 +216,7 @@ def add_row_to_emails(session, row):
 
 
 def get_table_summary(catalog, schema, table, campo):
-    cursor = session.cursor()
+    cursor = session.cursor(SnowflakeCursor)
     try:
         query= f"""
         SELECT {campo}
@@ -219,8 +224,12 @@ def get_table_summary(catalog, schema, table, campo):
         LIMIT 5
     """
         cursor.execute(query)
+
         result = cursor.fetchall()
-        return result
+        columns = [desc[0] for desc in cursor.description]
+        
+        rows = [dict(zip(columns, row)) for row in result]
+        return rows
     finally:
         cursor.close()
 
@@ -240,7 +249,7 @@ def ejecutar_procedimiento():
 
 # Función para cargar la tabla actualizada desde Snowflake
 def cargar_tabla():
-    cursor = session.cursor()
+    cursor = session.cursor(SnowflakeCursor)
     try:
         # Consulta a la tabla (ajusta según tu tabla específica)
         consulta = cursor.execute("select * from dataquality.resultados.dq_summary_errors order by EXECUTION_TS desc limit 30;")
