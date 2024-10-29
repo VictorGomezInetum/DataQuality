@@ -348,7 +348,7 @@ if option == "Configurar regla":
     
                         
                 cols = st.columns((1, 1))
-                campos_options = [''] + [row['COLUMN_NAME'] for row in data_table]
+                campos_options = [''] + [data_table['COLUMN_NAME'].tolist()]
                 
                 # Check if the previous selection is still valid
                 if 'campos_tabla' in st.session_state and st.session_state.campos_tabla in campos_options:
@@ -363,7 +363,7 @@ if option == "Configurar regla":
                     key=f'campos_tabla'
                 )
                 
-                                # Update tipo_campo dynamically
+                # Update tipo_campo dynamically
                 tipo_campo_value = next((row['DATA_TYPE'] for row in data_table if row['COLUMN_NAME'] == campos_tabla), None)
                 if campos_tabla!= "":
                     cols[0].markdown(f"**Tipo de Campo:** {tipo_campo_value}")
