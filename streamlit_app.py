@@ -144,7 +144,6 @@ def get_info_table(catalog, schema, table):
 
 
 
-# Change the query to point to your table
 def add_row_to_config(session, row):
     cursor = session.cursor(SnowflakeCursor)
     try:
@@ -168,13 +167,26 @@ def add_row_to_config(session, row):
                 AND TABLE_NAME = '{row['TABLE_NAME']}' AND COLUMN_NAME = '{row['COLUMN_NAME']}'
                 AND RULE_NAME = '{row['RULE_NAME']}'
             )"""
-        cursor.execute(query)
-
-        result = cursor.fetchall()
-        columns = [desc[0] for desc in cursor.description]
         
-        rows = [dict(zip(columns, row)) for row in result]
-        return rows[0][0]
+        # Ejecutar la consulta de inserción
+        cursor.execute(query)
+        
+        # Ejecutar una consulta para verificar la fila recién insertada
+        verify_query = f"""
+        SELECT * FROM DATAQUALITY.CONFIGURATION.CONFIG 
+        WHERE BBDD = '{row['BBDD']}' AND DATASET = '{row['DATASET']}'
+        AND TABLE_NAME = '{row['TABLE_NAME']}' AND COLUMN_NAME = '{row['COLUMN_NAME']}'
+        AND RULE_NAME = '{row['RULE_NAME']}'
+        """
+        
+        cursor.execute(verify_query)
+        
+        # Obtener la primera fila como un objeto de tipo Row
+        result = cursor.fetchone()
+        columns = [desc[0] for desc in cursor.description]
+        row_result = dict(zip(columns, result))
+        
+        return row_result
     finally:
         cursor.close()
 
