@@ -103,8 +103,14 @@ def get_tables_by_catalog_schema(catalog, schema):
         WHERE TABLE_SCHEMA = '{schema}';
         """
         cursor.execute(query)
+        
+        # Obtener nombres de columnas
+        columns = [desc[0] for desc in cursor.description]
+        
+        # Convertir a DataFrame
         result = cursor.fetchall()
-        return result
+        df = pd.DataFrame(result, columns=columns)
+        return df
     finally:
         cursor.close()
 
@@ -304,8 +310,8 @@ if option == "Configurar regla":
         st.warning("Selecciona un catalog")
     
     else:
-        schemas_df = get_schema_by_catalog(catalog_type)  # Asegúrate de pasar el catálogo seleccionado
-        schemas = schemas_df['SCHEMA_NAME'].tolist()  # Convertir la columna en una lista
+        schemas_df = get_schema_by_catalog(catalog_type) 
+        schemas = schemas_df['SCHEMA_NAME'].tolist()  
 
         #schemas = [row['SCHEMA_NAME'] for row in get_schema_by_catalog(catalog_type)]
         schema_type = cols[1].selectbox(
@@ -314,7 +320,8 @@ if option == "Configurar regla":
             on_change=reset_rules
         )
         if schema_type != '':
-            tables = [row['TABLE_NAME'] for row in get_tables_by_catalog_schema(catalog_type, schema_type)]
+            tables_df = get_tables_by_catalog_schema(catalog_type, schema_type)
+            tables = tables_df['SCHEMA_NAME'].tolist()
             table_type = cols[2].selectbox(
                 "Table:", tables,
                 key='table_type',
