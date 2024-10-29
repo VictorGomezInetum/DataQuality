@@ -348,7 +348,7 @@ if option == "Configurar regla":
     
                         
                 cols = st.columns((1, 1))
-                campos_options =  data_table['COLUMN_NAME'].tolist()
+                campos_options = data_table['COLUMN_NAME'].tolist()
                 
                 # Check if the previous selection is still valid
                 if 'campos_tabla' in st.session_state and st.session_state.campos_tabla in campos_options:
