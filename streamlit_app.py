@@ -181,14 +181,12 @@ def add_row_to_config(session, row):
             AND TABLE_NAME = '{row['TABLE_NAME']}' 
             AND COLUMN_NAME = '{row['COLUMN_NAME']}' 
             AND RULE_NAME = '{row['RULE_NAME']}'
-            AND TIME_CREATION < CURRENT_TIMESTAMP - INTERVAL '1 minute'
+            AND TIME_CREATION > CURRENT_TIMESTAMP - INTERVAL '1 minute'
         """
         
         cursor.execute(verify_query)
-        
-        # Obtener el número de filas introducidas
         result = cursor.fetchone()
-        count = result[0]  # Asume que count está en la primera posición
+        count = result[0] 
         
         return count
     finally:
