@@ -181,15 +181,13 @@ def add_row_to_config(session, row):
         
         cursor.execute(verify_query)
         
-        # Obtener la primera fila como un objeto de tipo Row
+        # Obtener el número de filas introducidas
         result = cursor.fetchone()
-        columns = [desc[0] for desc in cursor.description]
-        row_result = dict(zip(columns, result))
+        count = result[0]  # Asume que count está en la primera posición
         
-        return row_result
+        return count
     finally:
         cursor.close()
-
 
 def add_row_to_emails(session, row):
     cursor = session.cursor(SnowflakeCursor)
