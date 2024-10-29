@@ -248,9 +248,10 @@ def get_table_summary(catalog, schema, table, campo):
 
 # Función para ejecutar el procedimiento almacenado que uses
 def ejecutar_procedimiento():
+    cursor = session.cursor(SnowflakeCursor)
     try:
         # Ejecutar un procedimiento almacenado
-        session.sql('CALL DQ_PROCEDURE()').collect()
+        cursor.execute('CALL DQ_PROCEDURE()')
         st.success("¡Procedimiento ejecutado con éxito!")
     except Exception as e:
         st.success("¡Procedimiento ejecutado con éxito!")
