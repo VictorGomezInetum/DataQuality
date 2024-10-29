@@ -319,7 +319,6 @@ if option == "Configurar regla":
         schemas_df = get_schema_by_catalog(catalog_type) 
         schemas = schemas_df['SCHEMA_NAME'].tolist()  
 
-        #schemas = [row['SCHEMA_NAME'] for row in get_schema_by_catalog(catalog_type)]
         schema_type = cols[1].selectbox(
             "Schema:", schemas,
             key='schema_type',
@@ -364,7 +363,7 @@ if option == "Configurar regla":
                 )
                 
                 # Update tipo_campo dynamically
-                tipo_campo_value = next((row[2] for row in d if campos_tabla != ""))
+                tipo_campo_value = next((row[2] for row in schemas_df if campos_tabla != ""))
                 if campos_tabla!= "":
                     cols[0].markdown(f"**Tipo de Campo:** {tipo_campo_value}")
 
