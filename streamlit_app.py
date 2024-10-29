@@ -124,10 +124,16 @@ def get_info_table(catalog, schema, table):
         FROM {catalog}.INFORMATION_SCHEMA.COLUMNS
         WHERE TABLE_SCHEMA = '{schema}'
         AND TABLE_NAME = '{table}'
-    """
+        """
         cursor.execute(query)
+        
+        # Obtener nombres de columnas
+        columns = [desc[0] for desc in cursor.description]
+        
+        # Convertir a DataFrame
         result = cursor.fetchall()
-        return result
+        df = pd.DataFrame(result, columns=columns)
+        return df
     finally:
         cursor.close()
 
