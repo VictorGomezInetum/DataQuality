@@ -484,32 +484,25 @@ elif option == "Resumen de reglas":
    severities = config_df['SEVERITY'].unique().tolist()  # Obtener valores únicos
    severities.insert(0, 'Todos')
 
-   #severities = [row['SEVERITY'] for row in get_config()]
-   #severities = list(set(severities))  # Obtener valores únicos
-   #severities.insert(0, 'Todos')  # Agregar opción para ver todas las severidades
-
    # Filtro de severidad
    selected_severity = cols[0].selectbox("Selecciona la severidad:", severities)
 
    # Obtener bases de datos únicas
-   bbdds = [row['BBDD'] for row in get_config()]
-   bbdds = list(set(bbdds))  # Obtener valores únicos
+   bbdds = config_df['BBDD'].unique().tolist()  # Obtener valores únicos
    bbdds.insert(0, 'Todas')  # Agregar opción para ver todas las BBDD
 
    # Filtro de BBDD
    selected_bbdd = cols[1].selectbox("Selecciona la BBDD:", bbdds)
 
    # Obtener reglas únicas
-   rules = [row['RULE_NAME'] for row in get_config()]
-   rules = list(set(rules))  # Obtener valores únicos
+   rules = config_df['RULE_NAME'].unique().tolist() # Obtener valores únicos
    rules.insert(0, 'Todas')  # Agregar opción para ver todas las reglas
 
     # Filtro de reglas
    selected_rule = cols[2].selectbox("Selecciona la regla:", rules)
 
     # Obtener tipos de acción únicos
-   actions = [row['ACTION'] for row in get_config()]
-   actions = list(set(actions))  # Obtener valores únicos
+   actions = config_df['ACTION'].unique().tolist() # Obtener valores únicos
    actions.insert(0, 'Todas')  # Agregar opción para ver todas las acciones
 
     # Filtro de acción
