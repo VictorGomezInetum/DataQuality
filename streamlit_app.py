@@ -287,6 +287,7 @@ def reset_rules():
     for key in keys_to_remove:
         del st.session_state[key]
 
+st.set_page_config(page_title="DataQuality", layout="wide")
 st.markdown("""
           <style>
             [data-testid=stSidebar] {
