@@ -17,40 +17,40 @@ session = snowflake.connector.connect(
     role='ACCOUNTADMIN',
 )
 
-def get_dictionary():
-    cursor = session.cursor(SnowflakeCursor)
+def get_diccionary():
+    cursor = session.cursor()
     try:
         query = """
         select * from DATAQUALITY.RULES_DICTIONARY.DICTIONARY
         """
         cursor.execute(query)
-
-        # Obtener los resultados y nombres de columnas
-        result = cursor.fetchall()
+        
+        # Obtener nombres de columnas
         columns = [desc[0] for desc in cursor.description]
         
-        # Convertir a objetos Row
-        rows = [dict(zip(columns, row)) for row in result]
-        return rows
+        # Convertir a DataFrame
+        result = cursor.fetchall()
+        df = pd.DataFrame(result, columns=columns)
+        return df
     finally:
         cursor.close()
 
 
 def get_config():
-    cursor = session.cursor(SnowflakeCursor)
+    cursor = session.cursor()
     try:
         query = """
         SELECT * FROM DATAQUALITY.CONFIGURATION.CONFIG
         """
         cursor.execute(query)
-
-        # Obtener los resultados y nombres de columnas
-        result = cursor.fetchall()
+        
+        # Obtener nombres de columnas
         columns = [desc[0] for desc in cursor.description]
         
-        # Convertir a objetos Row
-        rows = [dict(zip(columns, row)) for row in result]
-        return rows
+        # Convertir a DataFrame
+        result = cursor.fetchall()
+        df = pd.DataFrame(result, columns=columns)
+        return df
     finally:
         cursor.close()
 
@@ -315,7 +315,7 @@ if option == "Configurar regla":
     
                
     catalog_type = cols[0].selectbox(
-        "Catalog:", ['', 'DATAQUALITY', 'STARTUPS', 'INCIDENCIAS'],
+        "Catalog:", ['','DATAQUALITY', 'STARTUPS', 'INCIDENCIAS'],
         key='catalog_type',
         on_change=reset_rules
     )
@@ -323,14 +323,17 @@ if option == "Configurar regla":
         st.warning("Selecciona un catalog")
     
     else:
-        schemas = [row['SCHEMA_NAME'] for row in get_schema_by_catalog(catalog_type)]
+        schemas_df = get_schema_by_catalog(catalog_type) 
+        schemas = schemas_df['SCHEMA_NAME'].tolist()  
+
         schema_type = cols[1].selectbox(
             "Schema:", schemas,
             key='schema_type',
             on_change=reset_rules
         )
         if schema_type != '':
-            tables = [row['TABLE_NAME'] for row in get_tables_by_catalog_schema(catalog_type, schema_type)]
+            tables_df = get_tables_by_catalog_schema(catalog_type, schema_type)
+            tables = tables_df['TABLE_NAME'].tolist()
             table_type = cols[2].selectbox(
                 "Table:", tables,
                 key='table_type',
@@ -351,7 +354,7 @@ if option == "Configurar regla":
     
                         
                 cols = st.columns((1, 1))
-                campos_options = [''] + [row['COLUMN_NAME'] for row in data_table]
+                campos_options = data_table['COLUMN_NAME'].tolist()
                 
                 # Check if the previous selection is still valid
                 if 'campos_tabla' in st.session_state and st.session_state.campos_tabla in campos_options:
@@ -366,8 +369,9 @@ if option == "Configurar regla":
                     key=f'campos_tabla'
                 )
                 
-                                # Update tipo_campo dynamically
-                tipo_campo_value = next((row['DATA_TYPE'] for row in data_table if row['COLUMN_NAME'] == campos_tabla), None)
+                # Update tipo_campo dynamically
+                tipo_campos_options = data_table['DATA_TYPE'].tolist()
+                tipo_campo_value = next((row[1] for row in tipo_campos_options if campos_tabla != ""))
                 if campos_tabla!= "":
                     cols[0].markdown(f"**Tipo de Campo:** {tipo_campo_value}")
 
@@ -388,9 +392,8 @@ if option == "Configurar regla":
                 for idx, rule in enumerate(st.session_state.rules):    
                     st.divider()
                     st.write(f"### Regla {idx+1}")
-                
                     
-                    reglas_options = [''] + [row['NAME'] for row in dictionary]
+                    reglas_options = dictionary['NAME'].tolist()
                     
                     # Check if the previous selection is still valid
                     if f'reglas_{idx}' in st.session_state and st.session_state[f'reglas_{idx}'] in reglas_options:
@@ -406,7 +409,7 @@ if option == "Configurar regla":
                     )
                     
                     # Update desc_regla dynamically
-                    desc_regla_value = next((row['DESCRIPTION'] for row in dictionary if row['NAME'] == reglas), None)
+                    desc_regla_value = next((row[3] for row in reglas if reglas != ""))
                     if reglas != "":
                         cols[1].markdown(f"**Descripción de regla:** {desc_regla_value}")
     
@@ -505,32 +508,29 @@ elif option == "Resumen de reglas":
    cols = st.columns((4))
 
    # Obtener niveles de severidad únicos
-   severities = [row['SEVERITY'] for row in get_config()]
-   severities = list(set(severities))  # Obtener valores únicos
-   severities.insert(0, 'Todos')  # Agregar opción para ver todas las severidades
+   config_df = get_config()  # get_config devuelve el DataFrame
+   severities = config_df['SEVERITY'].unique().tolist()  # Obtener valores únicos
+   severities.insert(0, 'Todos')
 
    # Filtro de severidad
    selected_severity = cols[0].selectbox("Selecciona la severidad:", severities)
 
    # Obtener bases de datos únicas
-   bbdds = [row['BBDD'] for row in get_config()]
-   bbdds = list(set(bbdds))  # Obtener valores únicos
+   bbdds = config_df['BBDD'].unique().tolist()  # Obtener valores únicos
    bbdds.insert(0, 'Todas')  # Agregar opción para ver todas las BBDD
 
    # Filtro de BBDD
    selected_bbdd = cols[1].selectbox("Selecciona la BBDD:", bbdds)
 
    # Obtener reglas únicas
-   rules = [row['RULE_NAME'] for row in get_config()]
-   rules = list(set(rules))  # Obtener valores únicos
+   rules = config_df['RULE_NAME'].unique().tolist() # Obtener valores únicos
    rules.insert(0, 'Todas')  # Agregar opción para ver todas las reglas
 
     # Filtro de reglas
    selected_rule = cols[2].selectbox("Selecciona la regla:", rules)
 
     # Obtener tipos de acción únicos
-   actions = [row['ACTION'] for row in get_config()]
-   actions = list(set(actions))  # Obtener valores únicos
+   actions = config_df['ACTION'].unique().tolist() # Obtener valores únicos
    actions.insert(0, 'Todas')  # Agregar opción para ver todas las acciones
 
     # Filtro de acción
@@ -592,3 +592,4 @@ elif option == "Notificaciones":
 elif option == "Visualizacion":
     url = "https://app.powerbi.com/links/QBjaDLKwV3?ctid=14cb4ab4-62b8-45a2-a944-e225383ee1f9&pbi_source=linkShare"
     st.write("Enlace al [Dashboard](%s)" % url)
+
