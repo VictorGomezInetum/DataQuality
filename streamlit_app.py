@@ -278,7 +278,7 @@ def cargar_tabla():
 
 def add_new_rule():
     st.session_state.rules.append({})
-    st.empty()
+    st.rerun()
 
 def reset_rules():
     st.session_state.rules = [{}]
@@ -481,7 +481,7 @@ if option == "Configurar regla":
                     
                 if cols[1].button("Limpiar reglas"):
                     reset_rules()
-                    st.empty()
+                    st.rerun()
                     
                         
                 if cols[2].button("Submit"):
