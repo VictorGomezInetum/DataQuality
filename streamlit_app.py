@@ -23,8 +23,14 @@ def get_diccionary():
         select * from DATAQUALITY.RULES_DICTIONARY.DICTIONARY
         """
         cursor.execute(query)
+        
+        # Obtener nombres de columnas
+        columns = [desc[0] for desc in cursor.description]
+        
+        # Convertir a DataFrame
         result = cursor.fetchall()
-        return result
+        df = pd.DataFrame(result, columns=columns)
+        return df
     finally:
         cursor.close()
 
@@ -384,7 +390,6 @@ if option == "Configurar regla":
                 for idx, rule in enumerate(st.session_state.rules):    
                     st.divider()
                     st.write(f"### Regla {idx+1}")
-                
                     
                     reglas_options = [''] + [row['NAME'] for row in dictionary]
                     
