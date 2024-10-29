@@ -348,7 +348,7 @@ if option == "Configurar regla":
             if table_type != '':
                 # Retrieve and cache data
                 data_table = get_info_table(catalog_type, schema_type, table_type)
-                dictionary = get_diccionary()
+                dictionary = get_dictionary()
                 
                 # Store data in session_state to prevent re-fetching
                 st.session_state['data_table'] = data_table
