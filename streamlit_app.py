@@ -7,8 +7,8 @@ import streamlit.components.v1 as components
 
 # Obtener la sesión activa de Snowflake
 session = snowflake.connector.connect(
-    user="VICTOR",
-    password="Telefonica04;",
+    user="Erik",
+    password="Blackpink_11",
     account="RGOHMJI-XB14586",
     warehouse='COMPUTE_WH',
     database="DATAQUALITY",
