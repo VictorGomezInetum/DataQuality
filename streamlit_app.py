@@ -186,7 +186,7 @@ def add_row_to_config(session, row):
             AND TABLE_NAME = '{row['TABLE_NAME']}' 
             AND COLUMN_NAME = '{row['COLUMN_NAME']}' 
             AND RULE_NAME = '{row['RULE_NAME']}'
-            AND TIME_CREATION < {hora_reducida}
+            AND TIME_CREATION > {hora_reducida}
         """
         
         cursor.execute(verify_query)
