@@ -321,7 +321,7 @@ if option == "Configurar regla":
         )
         if schema_type != '':
             tables_df = get_tables_by_catalog_schema(catalog_type, schema_type)
-            tables = tables_df['SCHEMA_NAME'].tolist()
+            tables = tables_df['TABLE_NAME'].tolist()
             table_type = cols[2].selectbox(
                 "Table:", tables,
                 key='table_type',
