@@ -37,6 +37,7 @@ def get_config():
         """
         cursor.execute(query)
         result = cursor.fetchall()
+        print(result)
         return result
     finally:
         cursor.close()
