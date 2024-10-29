@@ -77,9 +77,9 @@ def get_emails():
 def get_schema_by_catalog(catalog_name):
     cursor = session.cursor()
     try:
-        query = f"""
-        SELECT SCHEMA_NAME FROM DATAQUALITY.CONFIGURATION.SCHEMAS
-        WHERE CATALOG_NAME = '{catalog_name}'
+        query= f"""
+            SELECT SCHEMA_NAME
+            FROM {catalog_name}.INFORMATION_SCHEMA.SCHEMATA;
         """
         cursor.execute(query)
         
