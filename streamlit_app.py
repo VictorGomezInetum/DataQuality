@@ -173,7 +173,7 @@ def add_row_to_config(session, row):
         
         # Ejecutar una consulta para verificar la fila recién insertada
         verify_query = f"""
-        SELECT * FROM DATAQUALITY.CONFIGURATION.CONFIG 
+        SELECT count(*) as datos_introducidos FROM DATAQUALITY.CONFIGURATION.CONFIG 
         WHERE BBDD = '{row['BBDD']}' AND DATASET = '{row['DATASET']}'
         AND TABLE_NAME = '{row['TABLE_NAME']}' AND COLUMN_NAME = '{row['COLUMN_NAME']}'
         AND RULE_NAME = '{row['RULE_NAME']}'
