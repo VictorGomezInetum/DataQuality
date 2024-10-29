@@ -148,7 +148,7 @@ def get_info_table(catalog, schema, table):
 
 # Change the query to point to your table
 def add_row_to_config(session, row):
-    cursor = session.cursor()
+    cursor = session.cursor(SnowflakeCursor)
     try:
         args = ', '.join([f"""'{key}', '{value}'""" for key, value in json.loads(row['ARGS']).items()])
         query = f"""INSERT INTO DATAQUALITY.CONFIGURATION.CONFIG 
@@ -170,9 +170,19 @@ def add_row_to_config(session, row):
                 AND TABLE_NAME = '{row['TABLE_NAME']}' AND COLUMN_NAME = '{row['COLUMN_NAME']}'
                 AND RULE_NAME = '{row['RULE_NAME']}'
             )"""
+        
+        # Ejecutar la consulta de inserción
         cursor.execute(query)
-        result = cursor.fetchall()
-        return result[0][0]
+        
+        # Ejecutar una consulta para verificar la fila recién insertada
+        verify_query = f"""
+        SELECT count(*) FROM DATAQUALITY.CONFIGURATION.CONFIG 
+        WHERE BBDD = '{row['BBDD']}' AND DATASET = '{row['DATASET']}'
+        AND TABLE_NAME = '{row['TABLE_NAME']}' AND COLUMN_NAME = '{row['COLUMN_NAME']}'
+        AND RULE_NAME = '{row['RULE_NAME']}'
+        """
+
+        return cursor.execute(verify_query)
     finally:
         cursor.close()
 
