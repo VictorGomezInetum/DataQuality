@@ -481,7 +481,7 @@ if option == "Configurar regla":
                     
                 if cols[1].button("Limpiar reglas"):
                     reset_rules()
-                    st.experimental_rerun()
+                    st.empty()
                     
                         
                 if cols[2].button("Submit"):
